@@ -7,11 +7,8 @@ const ErrorHandling = require("./middlewares/ErrorHandler");
 const app = express();
 
 app.use(cors({
-    origin: [
-      "http://localhost:5173",
-      "https://djis.netlify.app"
-    ],
-    credentials: true
+    origin: ["http://localhost:5173", "https://djis.netlify.app"], // ✅ Yahan apna frontend domain likh
+    credentials: true, // Agar cookies ya auth bhejna ho toh
   }));
 app.use(morgan("dev"));
 
