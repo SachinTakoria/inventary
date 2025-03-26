@@ -15,7 +15,9 @@ process.on("unhandledRejection", (err) => {
     console.error("❌ Unhandled Rejection:", err);
 });
 
-// ✅ Server Start
-app.listen(PUBLIC_DATA.port, () => {
-    console.log(`✅ Server Running at http://localhost:${PUBLIC_DATA.port}`);
+const PORT = PUBLIC_DATA.port || 8000;
+const HOST = "0.0.0.0"; // ✅ Yeh line add karo
+
+app.listen(PORT, HOST, () => {
+    console.log(`✅ Server Running at http://${HOST}:${PORT}`);
 });
