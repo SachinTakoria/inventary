@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 class PUBLIC_DATA{
 
     static port = process.env.PORT || 4000 
