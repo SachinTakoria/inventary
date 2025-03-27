@@ -72,10 +72,21 @@ class OrdersController {
       });
       
 
-    static getAllorders = CatchAsync(async (req, res) => {
+      static getAllorders = CatchAsync(async (req, res) => {
         const res_obj = await OrderService.getAllorders(req?.user, req.query?.page, req.query?.query);
         return res.status(httpStatus.OK).json(res_obj);
     });
+    
+
+    static getAllOrders = CatchAsync(async (req, res) => {
+      try {
+          const orders = await OrdersModel.find().sort({ createdAt: -1 });
+          return res.status(httpStatus.OK).json({ success: true, orders });
+      } catch (error) {
+          console.error("🔥 Error fetching orders:", error);
+          return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to fetch orders" });
+      }
+  });
 
     static deleteOrder = CatchAsync(async (req, res) => {
         try {
