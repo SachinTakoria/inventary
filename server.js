@@ -18,6 +18,11 @@ process.on("unhandledRejection", (err) => {
 const PORT = PUBLIC_DATA.port || 8000;
 const HOST = "0.0.0.0"; // ✅ Yeh line add karo
 
-app.listen(PORT, HOST, () => {
-    console.log(`✅ Server Running at http://${HOST}:${PORT}`);
-});
+try {
+    app.listen(PORT, HOST, () => {
+      console.log(`✅ Server Running at http://${HOST}:${PORT}`);
+    });
+  } catch (error) {
+    console.error("🚨 Server Failed to Start:", error);
+  }
+  
