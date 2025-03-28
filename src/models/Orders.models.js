@@ -29,6 +29,9 @@ const Schema = new mongoose.Schema({
                 totalPrice: { // ✅ NEW FIELD
                     type: Number,
                     required: true
+                },
+                _id: {
+                    type: mongoose.Schema.Types.ObjectId
                 }
             }
         ]
@@ -51,7 +54,25 @@ const Schema = new mongoose.Schema({
     },
     totalAmountWithGST: {
         type: Number
-    }
+    },
+
+    // ✅ Additional Customer Details
+    customerName: {
+        type: String,
+        trim: true
+    },
+    customerAddress: {
+        type: String,
+        trim: true
+    },
+    customerGST: {
+        type: String,
+        trim: true
+    },
+    customerState: {
+        type: String,
+        trim: true
+    },
 
 }, { timestamps: true });
 

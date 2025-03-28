@@ -6,36 +6,48 @@ class OrderService {
     // ✅ Create Order (With GST Calculation)
     static async createOrder(user, body) {
         try {
-            const { consumer, items, withGST, gstRate } = body;
-
-            // ✅ Total Amount Calculation
-            let totalAmount = items.reduce((sum, item) => sum + item.price, 0);
-
-            // ✅ GST Amount Calculation
-            let totalAmountWithGST = totalAmount;
-            if (withGST) {
-                const gstAmount = (totalAmount * gstRate) / 100;
-                totalAmountWithGST += gstAmount;
-            }
-
-            // ✅ Order Create with GST
-            await OrdersModel.create({
-                user,
-                consumer,
-                items,
-                withGST,
-                gstRate,
-                totalAmount,
-                totalAmountWithGST
-            });
-
-            return {
-                msg: "Order Created Successfully"
-            }
+          const {
+            consumer,
+            items,
+            withGST,
+            gstRate,
+            customerName,
+            customerAddress,
+            customerGST,
+            customerState,
+          } = body;
+      
+          // ✅ Total Amount Calculation
+          let totalAmount = items.reduce((sum, item) => sum + item.price, 0);
+      
+          // ✅ GST Amount Calculation
+          let totalAmountWithGST = totalAmount;
+          if (withGST) {
+            const gstAmount = (totalAmount * gstRate) / 100;
+            totalAmountWithGST += gstAmount;
+          }
+      
+          // ✅ Order Create with GST
+          const newOrder = await OrdersModel.create({
+            user,
+            consumer,
+            items,
+            withGST,
+            gstRate,
+            totalAmount,
+            totalAmountWithGST,
+            customerName,
+            customerAddress,
+            customerGST,
+            customerState,
+          });
+      
+          return newOrder; // ✅ return full order instead of just msg
         } catch (error) {
-            throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+          throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
         }
-    }
+      }
+      
 
     // ✅ Get All Orders
     static async getAllorders(user, page = 1, query) {

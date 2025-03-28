@@ -74,8 +74,13 @@ class OrdersController {
 
       static getAllorders = CatchAsync(async (req, res) => {
         const res_obj = await OrderService.getAllorders(req?.user, req.query?.page, req.query?.query);
-        return res.status(httpStatus.OK).json(res_obj);
+        return res.status(httpStatus.OK).json({
+            success: true,
+            orders: res_obj.data,
+            hasMore: res_obj.hasMore
+        });
     });
+    
     
 
     static getAllOrders = CatchAsync(async (req, res) => {
@@ -154,9 +159,13 @@ class OrdersController {
     });
 
     static getInvoiceById = CatchAsync(async (req, res) => {
-        const res_obj = await OrderService.getInvoiceById(req?.user, req?.params?.id);
-        return res.status(httpStatus.OK).json(res_obj);
-    });
+      const order = await OrdersModel.findById(req.params.id);
+      if (!order) {
+          return res.status(404).json({ message: "Invoice not found" });
+      }
+      return res.status(httpStatus.OK).json({ order });
+  });
+  
 
 
 }

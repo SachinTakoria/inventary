@@ -28,4 +28,11 @@ router.route("/delete/:id")
 router.route("/sales-stats")
   .get(OrdersController.getSalesStats);
 
+
+  router.route("/") // ✅ This fixes the issue
+  .get(OrdersController.getAllOrders);
+
+  router.route("/invoice/:id").get(OrdersController.getInvoiceById);
+  
+
 module.exports = router;
