@@ -18,8 +18,16 @@ const routes = [
         route: require("./Product.route")
     },
     {
+        path: '/categories', // ✅ ADD THIS LINE
+        route: require("./Category.route")
+    },
+    {
         path: '/invoices', // ✅ NEW: Invoices API
         route: require("./invoice.route")
+    },
+    {
+        path: '/purchases', // ✅ NEW: Purchase Tracking API
+        route: require("./Purchase.route")
     }
 ];
 

@@ -8,47 +8,79 @@ const { UserModel, OrdersModel } = require("../models");
 class OrdersController {
     static createOrder = CatchAsync(async (req, res) => {
         try {
-          const { user, consumer, items, customerName, customerAddress, customerGST, customerState, withGST, gstRate } = req.body;
-      
-          console.log("📥 Received Items:", items);
-      
+          const {
+            user,
+            consumer,
+            items,
+            customerName,
+            customerAddress,
+            customerGST,
+            customerState,
+            customerPhone,
+            withGST,
+            gstRate,
+            amountPaid,
+            oldPendingAdjusted,
+            carryForward,
+            firm, // ✅ NEW - from frontend
+          } = req.body;
+    
+         
+    
           let totalAmount = 0;
           const formattedItems = [];
-      
+    
           for (const item of items) {
             const product = await Product.findById(item.productId);
-      
+    
             if (!product) {
-              return res.status(404).json({ message: `❌ Product not found in inventory!` });
+              return res.status(404).json({
+                message: `❌ Product not found in inventory!`,
+              });
             }
-      
+    
             if (product.stock < item.quantity) {
-              return res.status(400).json({ message: `❌ Not enough stock for '${product.productName}', available: ${product.stock}` });
+              return res.status(400).json({
+                message: `❌ Not enough stock for '${product.productName}', available: ${product.stock}`,
+              });
             }
-      
+    
             const itemTotal = product.price * item.quantity;
             totalAmount += itemTotal;
-      
+    
             formattedItems.push({
               name: product.productName,
               price: product.price,
               quantity: item.quantity,
               totalPrice: itemTotal,
-              _id: product._id
+              hsn: item.hsn || "",
+              _id: product._id,
             });
-      
-            // ✅ Reduce stock
+    
             product.stock -= item.quantity;
             await product.save();
           }
-      
-          // ✅ Calculate GST if needed
+    
           let totalAmountWithGST = totalAmount;
           if (withGST && gstRate) {
             totalAmountWithGST += (totalAmount * gstRate) / 100;
           }
-      
-          // ✅ Save Order
+    
+          // ✅ Firm-wise Invoice Number Logic
+          const prefix = firm === "shreesai" ? "SSS" : "DJT";
+          const latestOrder = await OrdersModel.findOne({ firm }) // filter by firm
+          .sort({ createdAt: -1 });
+        
+          let nextNumber = 1;
+    
+          if (latestOrder?.invoiceNumber) {
+            const last = parseInt(latestOrder.invoiceNumber.split("/")[1]);
+            if (!isNaN(last)) nextNumber = last + 1;
+          }
+    
+         
+const invoiceNumber = `${prefix}/${String(nextNumber).padStart(4, "0")}`;
+    
           const newOrder = await OrderService.createOrder(req?.user, {
             user,
             consumer,
@@ -60,38 +92,43 @@ class OrdersController {
             customerName,
             customerAddress,
             customerGST,
-            customerState
+            customerState,
+            customerPhone,
+            oldPendingAdjusted,
+            amountPaid,
+            carryForward,
+            invoiceNumber,
+            firm, // ✅ pass firm to DB
           });
-      
+    
           return res.status(httpStatus.CREATED).json({ success: true, order: newOrder });
-      
         } catch (error) {
-          console.error("🔥 Error creating order:", error);
+          
           return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: "❌ Failed to create order" });
         }
       });
+    
       
-
       static getAllorders = CatchAsync(async (req, res) => {
-        const res_obj = await OrderService.getAllorders(req?.user, req.query?.page, req.query?.query);
-        return res.status(httpStatus.OK).json({
-            success: true,
-            orders: res_obj.data,
-            hasMore: res_obj.hasMore
+        const { page, query, firm } = req.query;
+       const res_obj = await OrderService.getAllorders(req.user, page, query, firm);
+       return res.status(httpStatus.OK).json({
+          success: true,
+          orders: res_obj.data,
+          hasMore: res_obj.hasMore
         });
-    });
+      });
+      
     
-    
-
-    static getAllOrders = CatchAsync(async (req, res) => {
-      try {
-          const orders = await OrdersModel.find().sort({ createdAt: -1 });
-          return res.status(httpStatus.OK).json({ success: true, orders });
-      } catch (error) {
-          console.error("🔥 Error fetching orders:", error);
-          return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to fetch orders" });
-      }
-  });
+  //   static getAllOrders = CatchAsync(async (req, res) => {
+  //     try {
+  //         const orders = await OrdersModel.find().sort({ createdAt: -1 });
+  //         return res.status(httpStatus.OK).json({ success: true, orders });
+  //     } catch (error) {
+  //         console.error("🔥 Error fetching orders:", error);
+  //         return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to fetch orders" });
+  //     }
+  // });
 
     static deleteOrder = CatchAsync(async (req, res) => {
         try {
@@ -114,7 +151,7 @@ class OrdersController {
             return res.status(httpStatus.OK).json({ message: "Order deleted and stock restored", res_obj });
 
         } catch (error) {
-            console.error("Error deleting order:", error);
+           
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: "Failed to delete order" });
         }
     });
@@ -153,7 +190,7 @@ class OrdersController {
                 totalOrders,
             });
         } catch (err) {
-            console.log(err);
+           
             res.status(500).json({ message: "Failed to get sales stats" });
         }
     });
@@ -165,6 +202,65 @@ class OrdersController {
       }
       return res.status(httpStatus.OK).json({ order });
   });
+
+  static getSaleSummaryByDate = CatchAsync(async (req, res) => {
+    const { date } = req.query;
+
+    if (!date) {
+        return res.status(400).json({ message: "Date is required" });
+    }
+
+    const selectedDate = new Date(date);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    const nextDay = new Date(selectedDate);
+    nextDay.setDate(selectedDate.getDate() + 1);
+
+    const orders = await OrdersModel.find({
+        createdAt: {
+            $gte: selectedDate,
+            $lt: nextDay
+        }
+    });
+
+    let totalSale = 0;
+    orders.forEach(order => {
+        totalSale += order.totalAmount;
+    });
+
+    res.status(200).json({
+        date: date,
+        totalSale
+    });
+  });
+
+  static getOrdersByCustomerPhone = CatchAsync(async (req, res) => {
+    const { phone } = req.query;
+  
+    if (!phone) {
+      return res.status(400).json({ success: false, message: "Phone number is required" });
+    }
+  
+    const orders = await OrderService.getOrdersByPhone(phone);
+  
+    res.status(200).json({ success: true, orders });
+  });
+  
+  static getPendingAmountByPhone = CatchAsync(async (req, res) => {
+    const { phone } = req.query;
+  
+    if (!phone) {
+      return res.status(400).json({ message: "Phone number is required" });
+    }
+  
+    const pendingAmount = await OrderService.calculatePendingByPhone(phone);
+  
+    return res.status(httpStatus.OK).json({ pendingAmount });
+  });
+  
+
+
+
   
 
 

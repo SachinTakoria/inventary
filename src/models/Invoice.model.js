@@ -1,5 +1,3 @@
-// ✅ Step 2: Create Invoice.model.js
-
 const mongoose = require("mongoose");
 
 const invoiceSchema = new mongoose.Schema(
@@ -9,12 +7,18 @@ const invoiceSchema = new mongoose.Schema(
       ref: "user",
       required: true,
     },
+    invoiceNumber: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     items: [
       {
         name: String,
         price: Number,
         quantity: Number,
         totalPrice: Number,
+        hsn: String, // ✅ HSN Code added
         _id: false,
       },
     ],
@@ -22,16 +26,12 @@ const invoiceSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    totalAmountWithGST: {
-      type: Number,
-    },
+    totalAmountWithGST: Number,
     withGST: {
       type: Boolean,
       default: false,
     },
-    gstRate: {
-      type: Number,
-    },
+    gstRate: Number,
     customerName: String,
     customerAddress: String,
     customerGST: String,
@@ -41,5 +41,4 @@ const invoiceSchema = new mongoose.Schema(
 );
 
 const Invoice = mongoose.model("Invoice", invoiceSchema);
-
 module.exports = Invoice;

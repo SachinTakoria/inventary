@@ -15,10 +15,11 @@ const upload = multer({ storage: storage });
 
 router.post("/", upload.single("images"), async (req, res) => {
   try {
-    const { productName, category, brand, warehouse, supplier, status } =
+    const { productName, category, brand, warehouse,receivedStock, supplier, status } =
       req.body;
     const price = parseFloat(req.body.price);
     const stock = parseInt(req.body.stock, 10);
+    const received = parseInt(receivedStock, 10);
 
     if (
       !productName ||
@@ -28,7 +29,8 @@ router.post("/", upload.single("images"), async (req, res) => {
       !stock ||
       !warehouse ||
       !supplier ||
-      !status
+      !status ||
+      !received
     ) {
       return res.status(400).json({ message: "All fields are required!" });
     }
@@ -41,6 +43,7 @@ router.post("/", upload.single("images"), async (req, res) => {
       category,
       brand,
       stock,
+      receivedStock: received, 
       warehouse,
       supplier,
       status,
@@ -67,24 +70,51 @@ router.get("/products", async (req, res) => {
 
 router.put("/products/:id", async (req, res) => {
   try {
-      const { productName, price, brand, stock, warehouse, supplier, status } = req.body;
+    const {
+      productName,
+      price,
+      brand,
+      stock,
+      receivedStock,
+      warehouse,
+      supplier,
+      status,
+      category
+    } = req.body;
 
-      const updatedProduct = await Product.findByIdAndUpdate(
-          req.params.id,
-          { productName, price, brand, stock, warehouse, supplier, status },
-          { new: true }
-      );
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        productName,
+        price,
+        brand,
+        stock,
+        receivedStock,
+        warehouse,
+        supplier,
+        status,
+        category
+      },
+      { new: true }
+    );
 
-      if (!updatedProduct) {
-          return res.status(404).json({ message: "Product not found" });
-      }
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
 
-      res.status(200).json({ message: "✅ Product updated successfully!", product: updatedProduct });
+    res.status(200).json({
+      message: "✅ Product updated successfully!",
+      product: updatedProduct,
+    });
   } catch (error) {
-      console.error("Error updating product:", error);
-      res.status(500).json({ message: "❌ Error updating product", error });
+    console.error("Error updating product:", error);
+    res.status(500).json({
+      message: "❌ Error updating product",
+      error,
+    });
   }
 });
+
 
 
 router.delete("/:id", async (req, res) => {
