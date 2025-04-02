@@ -37,7 +37,7 @@ router.post("/", async (req, res) => {
 
     res.status(201).json({ message: "✅ Purchase Added", purchase: newPurchase });
   } catch (err) {
-    console.error("Error adding purchase:", err);
+   
     res.status(500).json({ message: "❌ Failed to add purchase", error: err });
   }
 });

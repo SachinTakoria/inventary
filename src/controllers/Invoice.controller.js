@@ -34,7 +34,7 @@ const InvoiceController = {
 
       res.status(httpStatus.CREATED).json({ success: true, invoice });
     } catch (error) {
-      console.error("🔥 Error creating invoice:", error);
+     
       res
         .status(httpStatus.INTERNAL_SERVER_ERROR)
         .json({ success: false, message: "Failed to create invoice" });
@@ -47,7 +47,7 @@ const InvoiceController = {
       const invoices = await Invoice.find().sort({ createdAt: -1 });
       res.status(httpStatus.OK).json({ success: true, invoices });
     } catch (error) {
-      console.error("🔥 Error fetching invoices:", error);
+     
       res
         .status(httpStatus.INTERNAL_SERVER_ERROR)
         .json({ success: false, message: "Failed to fetch invoices" });

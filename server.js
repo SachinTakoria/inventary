@@ -8,11 +8,11 @@ ConnectDB();
 
 // ✅ Uncaught Errors Handle Karne ke liye
 process.on("uncaughtException", (err) => {
-    console.error("❌ Uncaught Exception:", err);
+    // console.error("❌ Uncaught Exception:", err);
 });
 
 process.on("unhandledRejection", (err) => {
-    console.error("❌ Unhandled Rejection:", err);
+    // console.error("❌ Unhandled Rejection:", err);
 });
 
 const PORT = PUBLIC_DATA.port || 8000;
@@ -20,9 +20,9 @@ const HOST = "0.0.0.0"; // ✅ Yeh line add karo
 
 try {
     app.listen(PORT, HOST, () => {
-      console.log(`✅ Server Running at http://${HOST}:${PORT}`);
+      // console.log(`✅ Server Running at http://${HOST}:${PORT}`);
     });
   } catch (error) {
-    console.error("🚨 Server Failed to Start:", error);
+    // console.error("🚨 Server Failed to Start:", error);
   }
   

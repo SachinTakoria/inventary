@@ -1,6 +1,6 @@
 require("dotenv").config(); // ✅ Yeh line already hai
 
-console.log("👉 MONGO_URI =", process.env.MONGO_URI); // ✅ Yeh line add karo
+// console.log("👉 MONGO_URI =", process.env.MONGO_URI); // ✅ Yeh line add karo
 
 class PUBLIC_DATA {
     static port = process.env.PORT || 4000;

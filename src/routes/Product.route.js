@@ -107,7 +107,7 @@ router.put("/products/:id", async (req, res) => {
       product: updatedProduct,
     });
   } catch (error) {
-    console.error("Error updating product:", error);
+   
     res.status(500).json({
       message: "❌ Error updating product",
       error,
