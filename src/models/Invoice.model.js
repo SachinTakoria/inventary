@@ -32,6 +32,7 @@ const invoiceSchema = new mongoose.Schema(
       default: false,
     },
     gstRate: Number,
+    customerPhone: String,
     customerName: String,
     customerAddress: String,
     customerGST: String,

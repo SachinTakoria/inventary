@@ -14,8 +14,9 @@ class OrderService {
         customerName,
         customerAddress,
         customerGST,
-        customerState,
         customerPhone,
+        customerState,
+        
         oldPendingAdjusted,
         amountPaid,
         carryForward,
@@ -45,6 +46,7 @@ class OrderService {
         customerName,
         customerAddress,
         customerGST,
+        customerPhone,
         customerState,
         invoiceNumber, // ✅
         firm, // ✅

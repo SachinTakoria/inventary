@@ -50,7 +50,7 @@ class ConsumerService{
 
         const checkExist = await ConsumerModel.findOne({_id:id,user:user});
 
-        console.log({user,id});
+     
 
         if(!checkExist){
             throw new ApiError(httpStatus.BAD_REQUEST,"Consumer Not Found in Record");

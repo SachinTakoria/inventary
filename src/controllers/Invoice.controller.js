@@ -30,11 +30,10 @@ const InvoiceController = {
       const invoiceData = { ...req.body, invoiceNumber };
 
       const invoice = new Invoice(invoiceData);
-      await invoice.save();
+      const savedInvoice = await invoice.save();
 
-      res.status(httpStatus.CREATED).json({ success: true, invoice });
+      res.status(httpStatus.CREATED).json({ success: true, invoice: savedInvoice });
     } catch (error) {
-     
       res
         .status(httpStatus.INTERNAL_SERVER_ERROR)
         .json({ success: false, message: "Failed to create invoice" });
@@ -47,7 +46,6 @@ const InvoiceController = {
       const invoices = await Invoice.find().sort({ createdAt: -1 });
       res.status(httpStatus.OK).json({ success: true, invoices });
     } catch (error) {
-     
       res
         .status(httpStatus.INTERNAL_SERVER_ERROR)
         .json({ success: false, message: "Failed to fetch invoices" });

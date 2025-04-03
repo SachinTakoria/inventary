@@ -15,11 +15,11 @@ const upload = multer({ storage: storage });
 
 router.post("/", upload.single("images"), async (req, res) => {
   try {
-    const { productName, category, brand, warehouse,receivedStock, supplier, status } =
+    const { productName, category, brand, warehouse, supplier, status } =
       req.body;
     const price = parseFloat(req.body.price);
     const stock = parseInt(req.body.stock, 10);
-    const received = parseInt(receivedStock, 10);
+    // const received = parseInt(receivedStock, 10);
 
     if (
       !productName ||
@@ -29,8 +29,8 @@ router.post("/", upload.single("images"), async (req, res) => {
       !stock ||
       !warehouse ||
       !supplier ||
-      !status ||
-      !received
+      !status 
+      
     ) {
       return res.status(400).json({ message: "All fields are required!" });
     }
@@ -43,7 +43,7 @@ router.post("/", upload.single("images"), async (req, res) => {
       category,
       brand,
       stock,
-      receivedStock: received, 
+       
       warehouse,
       supplier,
       status,
@@ -75,7 +75,7 @@ router.put("/products/:id", async (req, res) => {
       price,
       brand,
       stock,
-      receivedStock,
+      
       warehouse,
       supplier,
       status,
@@ -89,7 +89,7 @@ router.put("/products/:id", async (req, res) => {
         price,
         brand,
         stock,
-        receivedStock,
+        
         warehouse,
         supplier,
         status,

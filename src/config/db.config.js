@@ -6,11 +6,7 @@ exports.ConnectDB = async () => {
     console.log("🔁 Trying to connect to MongoDB...");
     console.log("🔑 URI:", PUBLIC_DATA.mongo_uri);
 
-    await mongoose.connect(PUBLIC_DATA.mongo_uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 10000, // ✅ 10 sec timeout for fail-safe
-    });
+    await mongoose.connect(PUBLIC_DATA.mongo_uri)
 
     console.log(`✅ MongoDB connected at ${mongoose.connection.host}`);
   } catch (error) {

@@ -18,29 +18,28 @@ router.get("/", async (req, res) => {
 
 // ✅ Add Purchase (and auto-update product)
 router.post("/", async (req, res) => {
-  try {
-    const { product, supplier, quantity, price, date } = req.body;
+  const { product, supplier, quantity, price, date } = req.body;
 
-    const newPurchase = await Purchase.create({ product, supplier, quantity, price, date });
+  // 1. Pehle purchase save karo
+  const newPurchase = await Purchase.create({ product, supplier, quantity, price, date });
 
-    // ✅ Auto-update product total stock + avg purchase price
-    const allPurchases = await Purchase.find({ product });
+  // 2. Phir us product ke saare purchases nikalo
+  const allPurchases = await Purchase.find({ product });
 
-    const totalQty = allPurchases.reduce((sum, p) => sum + p.quantity, 0);
-    const totalAmount = allPurchases.reduce((sum, p) => sum + (p.quantity * p.price), 0);
-    const avgPrice = totalAmount / totalQty;
+  // 3. Total quantity aur total amount nikaalo
+  const totalQty = allPurchases.reduce((sum, p) => sum + p.quantity, 0);
+  const totalAmount = allPurchases.reduce((sum, p) => sum + (p.quantity * p.price), 0);
+  const avgPrice = totalAmount / totalQty;
 
-    await Product.findByIdAndUpdate(product, {
-      $inc: { stock: quantity },
-      avgPurchasePrice: avgPrice.toFixed(2)
-    });
+  // 4. Product ka stock update karo
+  await Product.findByIdAndUpdate(product, {
+    $inc: { stock: quantity }, // increase stock
+    avgPurchasePrice: avgPrice.toFixed(2), // set avg price
+  });
 
-    res.status(201).json({ message: "✅ Purchase Added", purchase: newPurchase });
-  } catch (err) {
-   
-    res.status(500).json({ message: "❌ Failed to add purchase", error: err });
-  }
+  res.status(201).json({ message: "✅ Purchase Added", purchase: newPurchase });
 });
+
 
 // ✅ Get All Purchases for a Product
 router.get("/product/:id", async (req, res) => {
@@ -51,5 +50,24 @@ router.get("/product/:id", async (req, res) => {
     res.status(500).json({ message: "❌ Failed to fetch purchase history", error: err });
   }
 });
+
+
+// DELETE /purchases/:id
+router.delete("/:id", async (req, res) => {
+  const purchase = await Purchase.findById(req.params.id);
+  if (!purchase) return res.status(404).json({ message: "Purchase not found" });
+
+  // Get quantity & product ID
+  const { product, quantity } = purchase;
+
+  // Delete purchase
+  await Purchase.findByIdAndDelete(req.params.id);
+
+  // Decrease stock
+  await Product.findByIdAndUpdate(product, { $inc: { stock: -quantity } });
+
+  res.status(200).json({ message: "Purchase deleted and stock updated" });
+});
+
 
 module.exports = router;

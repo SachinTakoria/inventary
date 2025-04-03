@@ -40,9 +40,9 @@ const Schema = new mongoose.Schema({
     },
     invoiceNumber: {
         type: String,
-        required: true,
-        unique: true,
-    },
+        unique: true, // keep this
+        required: false, // make this false or remove
+      },
     firm: {
         type: String,
         enum: ["devjyoti", "shreesai"],
@@ -99,10 +99,9 @@ const Schema = new mongoose.Schema({
     customerPhone: {
         type: String,
         trim: true
-      },
-      
-      
-    customerState: {
+      }
+      ,
+      customerState: {
         type: String,
         trim: true
     },
