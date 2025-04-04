@@ -18,7 +18,8 @@ router.post("/", upload.single("images"), async (req, res) => {
     const { productName, category, brand, warehouse, supplier, status } =
       req.body;
     const price = parseFloat(req.body.price);
-    const stock = parseInt(req.body.stock, 10);
+    const stock = parseInt(req.body.stock || "0", 10); // default 0 if not provided
+
     // const received = parseInt(receivedStock, 10);
 
     if (
@@ -26,7 +27,7 @@ router.post("/", upload.single("images"), async (req, res) => {
       !price ||
       !category ||
       !brand ||
-      !stock ||
+      // !stock ||
       !warehouse ||
       !supplier ||
       !status 
@@ -42,7 +43,7 @@ router.post("/", upload.single("images"), async (req, res) => {
       price,
       category,
       brand,
-      stock,
+      // stock,
        
       warehouse,
       supplier,
