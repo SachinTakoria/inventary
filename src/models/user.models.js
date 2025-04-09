@@ -16,6 +16,10 @@ const Schema = new mongoose.Schema({
                 type:String, 
                 trim:true, 
                 required:[true,"Password is required"]
+            },role: {
+                type: String,
+                enum: ['admin', 'subadmin'], // ✅ only 2 roles allowed
+                default: 'subadmin'
             }
 },{timestamps:true})
 

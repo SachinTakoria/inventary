@@ -38,5 +38,10 @@ router.get("/by-customer", OrdersController.getOrdersByCustomerPhone);
 
 router.get("/pending", OrdersController.getPendingAmountByPhone);
 
+router
+  .route("/update-invoice-number/:id")
+  .patch(OrdersController.updateInvoiceNumber);
+
+
 
 module.exports = router;

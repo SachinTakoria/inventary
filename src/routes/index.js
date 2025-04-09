@@ -26,6 +26,10 @@ const routes = [
         route: require("./invoice.route")
     },
     {
+        path: '/consignees',  // ✅ NEW: Consignee API added here
+        route: require("./Consignee.route")
+    },
+    {
         path: '/purchases', // ✅ NEW: Purchase Tracking API
         route: require("./Purchase.route")
     }

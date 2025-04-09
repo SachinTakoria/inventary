@@ -272,6 +272,33 @@ class OrdersController {
 
     return res.status(httpStatus.OK).json({ pendingAmount });
   });
+
+  static updateInvoiceNumber = CatchAsync(async (req, res) => {
+    const { id } = req.params;
+    const { invoiceNumber } = req.body;
+  
+    if (!invoiceNumber) {
+      return res.status(400).json({ message: "Invoice number is required" });
+    }
+  
+    const updatedOrder = await OrdersModel.findByIdAndUpdate(
+      id,
+      { invoiceNumber },
+      { new: true }
+    );
+  
+    if (!updatedOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+  
+    return res.status(200).json({
+      success: true,
+      message: "Invoice number updated successfully",
+      order: updatedOrder,
+    });
+  });
+  
+
 }
 
 module.exports = OrdersController;
