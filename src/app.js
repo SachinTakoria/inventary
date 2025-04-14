@@ -7,7 +7,7 @@ const ErrorHandling = require("./middlewares/ErrorHandler");
 const app = express();
 
 app.use(cors({
-    origin: ["http://localhost:5173"  ,"https://djtextilein.netlify.app"], // ✅ Yahan apna frontend domain likh "https://djis.netlify.app"
+    origin: ["http://localhost:5173"  ,"https://djtextile.in"], // ✅ Yahan apna frontend domain likh "https://djis.netlify.app"
     credentials: true, // Agar cookies ya auth bhejna ho toh
   }));
 app.use(morgan("dev"));
