@@ -157,6 +157,23 @@ class OrderService {
 
     return totalPending;
   }
+
+  // ✅ Update Payment By Invoice Number
+static async updatePaymentByInvoice(invoiceId, amountPaid) {
+  const order = await OrdersModel.findOne({ invoiceNumber: invoiceId });
+
+  if (!order) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Invoice not found");
+  }
+
+  order.amountPaid = (order.amountPaid || 0) + Number(amountPaid);  // ✅ Payment add ho rahi hai
+  order.carryForward = order.carryForward - Number(amountPaid);     // ✅ Only carryForward ko adjust karo
+  
+
+  await order.save();
+  return order;
+}
+
 }
 
 module.exports = OrderService;

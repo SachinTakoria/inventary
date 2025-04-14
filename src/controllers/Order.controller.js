@@ -7,6 +7,8 @@ const { UserModel, OrdersModel } = require("../models");
 class OrdersController {
   static createOrder = CatchAsync(async (req, res) => {
     try {
+    
+
       const {
         user,
         consumer,
@@ -67,18 +69,23 @@ class OrdersController {
       }
 
       // ✅ Firm-wise Invoice Number Logic
-      const prefix = firm === "shreesai" ? "SSS" : "DJT";
-      const latestOrder = await OrdersModel.findOne({ firm }) // filter by firm
-        .sort({ createdAt: -1 });
+      // ✅ NAYA SAFE LOGIC - COPY PASTE KAR DO
+const prefix = firm === "shreesai" ? "SSS" : "DJT";
 
-      let nextNumber = 1;
+let nextNumber = 1;
+let invoiceNumber = "";
+let exists = true;
 
-      if (latestOrder?.invoiceNumber) {
-        const last = parseInt(latestOrder.invoiceNumber.split("/")[1]);
-        if (!isNaN(last)) nextNumber = last + 1;
-      }
+while (exists) {
+  invoiceNumber = `${prefix}/${String(nextNumber).padStart(4, "0")}`;
+  const check = await OrdersModel.findOne({ invoiceNumber });
+  if (!check) {
+    exists = false;
+  } else {
+    nextNumber++;
+  }
+}
 
-      const invoiceNumber = `${prefix}/${String(nextNumber).padStart(4, "0")}`;
 
       const newOrder = await OrderService.createOrder(req?.user, {
         user,
@@ -105,6 +112,7 @@ class OrdersController {
         .status(httpStatus.CREATED)
         .json({ success: true, order: newOrder });
     } catch (error) {
+      
       return res
         .status(httpStatus.INTERNAL_SERVER_ERROR)
         .json({ message: "❌ Failed to create order" });
@@ -126,15 +134,6 @@ class OrdersController {
     });
   });
 
-  //   static getAllOrders = CatchAsync(async (req, res) => {
-  //     try {
-  //         const orders = await OrdersModel.find().sort({ createdAt: -1 });
-  //         return res.status(httpStatus.OK).json({ success: true, orders });
-  //     } catch (error) {
-  //         console.error("🔥 Error fetching orders:", error);
-  //         return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to fetch orders" });
-  //     }
-  // });
 
   static deleteOrder = CatchAsync(async (req, res) => {
     try {
@@ -297,6 +296,33 @@ class OrdersController {
       order: updatedOrder,
     });
   });
+
+
+  static updateInvoicePayment = CatchAsync(async (req, res) => {
+    const { invoiceId } = req.params;
+    const { amountPaid } = req.body;
+  
+    if (!amountPaid) {
+      return res.status(400).json({ message: "Amount paid is required" });
+    }
+  
+    try {
+      const updatedOrder = await OrderService.updatePaymentByInvoice(
+        invoiceId,
+        amountPaid
+      );
+  
+      return res.status(200).json({
+        success: true,
+        message: "Payment updated successfully",
+        order: updatedOrder,
+      });
+    } catch (error) {
+      return res.status(404).json({ message: error.message });
+    }
+  });
+  
+
   
 
 }

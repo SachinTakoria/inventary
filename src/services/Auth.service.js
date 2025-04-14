@@ -2,28 +2,10 @@ const httpStatus = require("http-status");
 const { UserModel, ProfileModel } = require("../models");
 const ApiError = require("../utils/ApiError");
 const { generatoken } = require("../utils/Token.utils");
-const axios = require("axios");
 
 class AuthService {
   static async RegisterUser(body) {
-    const { email, password, name, token, role } = body;
-
-    const response = await axios.post(
-      `https://www.google.com/recaptcha/api/siteverify`,
-      {},
-      {
-        params: {
-          secret: process.env.CAPTCHA_SCREATE_KEY,
-          response: token,
-        },
-      }
-    );
-
-    const data = await response.data;
-
-    if (!data.success) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Captcha Not Valid");
-    }
+    const { email, password, name, role } = body;
 
     const checkExist = await UserModel.findOne({ email });
     if (checkExist) {
@@ -57,24 +39,7 @@ class AuthService {
   }
 
   static async LoginUser(body) {
-    const { email, password, token } = body;
-
-    const response = await axios.post(
-      `https://www.google.com/recaptcha/api/siteverify`,
-      {},
-      {
-        params: {
-          secret: process.env.CAPTCHA_SCREATE_KEY,
-          response: token,
-        },
-      }
-    );
-
-    const data = await response.data;
-
-    if (!data.success) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Captcha Not Valid");
-    }
+    const { email, password } = body;
 
     const checkExist = await UserModel.findOne({ email });
     if (!checkExist) {

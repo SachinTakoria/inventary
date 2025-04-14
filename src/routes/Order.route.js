@@ -42,6 +42,9 @@ router
   .route("/update-invoice-number/:id")
   .patch(OrdersController.updateInvoiceNumber);
 
+  router
+  .route("/update-payment/:invoiceId")
+  .patch(OrdersController.updateInvoicePayment);
 
 
 module.exports = router;
