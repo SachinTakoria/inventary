@@ -7,8 +7,6 @@ const { UserModel, OrdersModel } = require("../models");
 class OrdersController {
   static createOrder = CatchAsync(async (req, res) => {
     try {
-    
-
       const {
         user,
         consumer,
@@ -21,35 +19,37 @@ class OrdersController {
         withGST,
         gstRate,
         amountPaid,
+        consignee: selectedConsignee,
         oldPendingAdjusted,
         carryForward,
-        firm, // ✅ NEW - from frontend
+        firm,
+        discountPercent,   // ✅ new
+        discountAmount: discountAmtFromFrontend, // ✅ new
       } = req.body;
-
-
+  
       let totalAmount = req.body.totalAmount || 0;
       const formattedItems = [];
-
+  
       for (const item of items) {
         const product = await Product.findById(item.productId);
-
+  
         if (!product) {
           return res.status(404).json({
             message: `❌ Product not found in inventory!`,
           });
         }
-
+  
         if (product.stock < item.quantity) {
           return res.status(400).json({
             message: `❌ Not enough stock for '${product.productName}', available: ${product.stock}`,
           });
         }
-
+  
         const itemTotal = product.price * item.quantity;
         if (!req.body.totalAmount) {
-          totalAmount += itemTotal; // ✅ only calculate if not sent from frontend
+          totalAmount += itemTotal;
         }
-
+  
         formattedItems.push({
           name: product.productName,
           price: product.price,
@@ -58,41 +58,65 @@ class OrdersController {
           hsn: item.hsn || "",
           _id: product._id,
         });
-
+  
         product.stock -= item.quantity;
         await product.save();
       }
-
+  
+      // ✅ Apply discount BEFORE GST
+      let discountAmount = 0;
+      if (discountPercent && discountPercent > 0) {
+        discountAmount = (totalAmount * discountPercent) / 100;
+        totalAmount -= discountAmount;
+      } else if (discountAmtFromFrontend && discountAmtFromFrontend > 0) {
+        discountAmount = discountAmtFromFrontend;
+        totalAmount -= discountAmount;
+      }
+  
+      // ✅ Apply GST after discount
       let totalAmountWithGST = totalAmount;
       if (withGST && gstRate) {
         totalAmountWithGST += (totalAmount * gstRate) / 100;
       }
-
-      // ✅ Firm-wise Invoice Number Logic
-      // ✅ NAYA SAFE LOGIC - COPY PASTE KAR DO
-const prefix = firm === "shreesai" ? "SSS" : "DJT";
-
-let nextNumber = 1;
-let invoiceNumber = "";
-let exists = true;
-
-while (exists) {
-  invoiceNumber = `${prefix}/${String(nextNumber).padStart(4, "0")}`;
-  const check = await OrdersModel.findOne({ invoiceNumber });
-  if (!check) {
-    exists = false;
-  } else {
-    nextNumber++;
-  }
-}
-
-
+  
+      // ✅ Firm-wise invoice number logic
+      const prefix = firm === "shreesai" ? "SSS" : "DJT";
+  
+      const latestOrder = await OrdersModel
+        .find({ invoiceNumber: { $regex: `^${prefix}/` }, firm })
+        .sort({ createdAt: -1 })
+        .limit(1);
+  
+      let nextNumber = 1;
+      if (latestOrder.length > 0 && latestOrder[0].invoiceNumber) {
+        const parts = latestOrder[0].invoiceNumber.split("/");
+        if (parts.length === 2 && !isNaN(parseInt(parts[1]))) {
+          nextNumber = parseInt(parts[1]) + 1;
+        }
+      }
+  
+      let invoiceNumber;
+      let exists = true;
+  
+      while (exists) {
+        invoiceNumber = `${prefix}/${String(nextNumber).padStart(4, "0")}`;
+        const check = await OrdersModel.findOne({ invoiceNumber, firm });
+        if (!check) {
+          exists = false;
+        } else {
+          nextNumber++;
+        }
+      }
+  
+      // ✅ Save to database
       const newOrder = await OrderService.createOrder(req?.user, {
         user,
         consumer,
         items: formattedItems,
         totalAmount,
         totalAmountWithGST,
+        discountPercent,
+        discountAmount,
         withGST,
         gstRate,
         customerName,
@@ -100,24 +124,25 @@ while (exists) {
         customerAddress,
         customerGST,
         customerState,
-       
+        consignee: selectedConsignee,
         oldPendingAdjusted,
         amountPaid,
         carryForward,
         invoiceNumber,
-        firm, // ✅ pass firm to DB
+        firm,
       });
-
+  
       return res
         .status(httpStatus.CREATED)
         .json({ success: true, order: newOrder });
+  
     } catch (error) {
-      
       return res
         .status(httpStatus.INTERNAL_SERVER_ERROR)
         .json({ message: "❌ Failed to create order" });
     }
   });
+  
 
   static getAllorders = CatchAsync(async (req, res) => {
     const { page, query, firm } = req.query;

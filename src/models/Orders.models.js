@@ -43,6 +43,14 @@ const Schema = new mongoose.Schema({
         unique: true, // keep this
         required: false, // make this false or remove
       },
+      consignee: {
+        name: { type: String },
+        address: { type: String },
+        gstin: { type: String },
+        pan: { type: String },
+        state: { type: String },
+      },
+      
     firm: {
         type: String,
         enum: ["devjyoti", "shreesai"],
@@ -79,6 +87,14 @@ const Schema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    discountPercent: {
+        type: Number,
+        default: 0,
+      },
+      discountAmount: {
+        type: Number,
+        default: 0,
+      },
     totalAmountWithGST: {
         type: Number
     },

@@ -16,31 +16,43 @@ class OrderService {
         customerGST,
         customerPhone,
         customerState,
-        
+        consignee,
         oldPendingAdjusted,
         amountPaid,
         carryForward,
         invoiceNumber,
         firm,
+        discountPercent = 0,         // ✅ new
+        discountAmount = 0,          // ✅ new
       } = body;
-
-      // ✅ Total Amount Calculation
+  
+      // ✅ Subtotal calculation
       let totalAmount = items.reduce((sum, item) => sum + item.price, 0);
-
+  
+      // ✅ Apply discount (if any)
+      if (discountPercent > 0) {
+        const calculatedDiscount = (totalAmount * discountPercent) / 100;
+        totalAmount -= calculatedDiscount;
+      } else if (discountAmount > 0) {
+        totalAmount -= discountAmount;
+      }
+  
       // ✅ GST Amount Calculation
       let totalAmountWithGST = totalAmount;
       if (withGST) {
-        const gstAmount = (totalAmount * gstRate) / 100;
-        totalAmountWithGST += gstAmount;
+        const gst = (totalAmount * gstRate) / 100;
+        totalAmountWithGST += gst;
       }
-
-      // ✅ Order Create with GST
+  
+      // ✅ Order Create
       const newOrder = await OrdersModel.create({
         user,
         consumer,
         items,
         withGST,
         gstRate,
+        discountPercent,
+        discountAmount,
         totalAmount,
         totalAmountWithGST,
         customerName,
@@ -48,18 +60,20 @@ class OrderService {
         customerGST,
         customerPhone,
         customerState,
-        invoiceNumber, // ✅
-        firm, // ✅
+        consignee,
+        invoiceNumber,
+        firm,
         amountPaid,
         oldPendingAdjusted,
         carryForward,
       });
-
-      return newOrder; // ✅ return full order instead of just msg
+  
+      return newOrder;
     } catch (error) {
       throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
     }
   }
+  
 
   // ✅ Get All Orders
   static async getAllorders(user, page = 1, query, firm) {

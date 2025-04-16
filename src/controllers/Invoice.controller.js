@@ -27,7 +27,7 @@ let exists = true;
 // ✅ Check until we find a unique invoice number
 while (exists) {
   invoiceNumber = `${prefix}/${String(nextNumber).padStart(4, "0")}`;
-  const check = await OrdersModel.findOne({ invoiceNumber });
+  const check = await OrdersModel.findOne({ invoiceNumber,firm });
   if (!check) {
     exists = false;
   } else {
