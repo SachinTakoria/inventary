@@ -26,11 +26,9 @@ router.post("/", upload.single("images"), async (req, res) => {
       !productName ||
       !price ||
       !category ||
-      !brand ||
-      // !stock ||
-      !warehouse ||
-      !supplier ||
-      !status 
+      !brand
+    
+      
       
     ) {
       return res.status(400).json({ message: "All fields are required!" });
