@@ -27,6 +27,10 @@ const Schema = new mongoose.Schema({
                     required: true,
                     default: 1
                 },
+                discount:{
+                    type:Number,
+                    default:0
+                },
                 totalPrice: {
                     type: Number,
                     required: true
@@ -41,7 +45,7 @@ const Schema = new mongoose.Schema({
     invoiceNumber: {
         type: String,
         unique: true, // keep this
-        required: false, // make this false or remove
+        required: true, // make this false or remove
       },
       consignee: {
         name: { type: String },
@@ -94,6 +98,10 @@ const Schema = new mongoose.Schema({
       discountAmount: {
         type: Number,
         default: 0,
+      },
+      discount:{
+        type:Number,
+        default:0
       },
     totalAmountWithGST: {
         type: Number

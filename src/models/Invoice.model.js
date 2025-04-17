@@ -18,7 +18,8 @@ const invoiceSchema = new mongoose.Schema(
         price: Number,
         quantity: Number,
         totalPrice: Number,
-        hsn: String, // ✅ HSN Code added
+        hsn: String,
+        discount: Number, // ✅ HSN Code added
         _id: false,
       },
     ],

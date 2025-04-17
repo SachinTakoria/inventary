@@ -17,6 +17,7 @@ class OrderService {
         customerPhone,
         customerState,
         consignee,
+        createdAt,
         oldPendingAdjusted,
         amountPaid,
         carryForward,
@@ -27,7 +28,12 @@ class OrderService {
       } = body;
   
       // ✅ Subtotal calculation
-      let totalAmount = items.reduce((sum, item) => sum + item.price, 0);
+      let totalAmount = items.reduce((sum, item) => {
+        const discount = item.discount || 0;
+        const discountedPrice = item.price - (item.price * discount) / 100;
+        return sum + discountedPrice * item.quantity;
+      }, 0);
+      
   
       // ✅ Apply discount (if any)
       if (discountPercent > 0) {
@@ -66,6 +72,7 @@ class OrderService {
         amountPaid,
         oldPendingAdjusted,
         carryForward,
+        createdAt,
       });
   
       return newOrder;

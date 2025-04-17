@@ -3,9 +3,11 @@ const CatchAsync = require("../utils/CatchAsync");
 const OrderService = require("../services/Orders.service");
 const Product = require("../models/Product");
 const { UserModel, OrdersModel } = require("../models");
+const getNextInvoiceNumber = require("../utils/getNextInvoiceNumber");
+
 
 class OrdersController {
-  static createOrder = CatchAsync(async (req, res) => {
+ static createOrder = CatchAsync(async (req, res) => {
     try {
       const {
         user,
@@ -17,39 +19,40 @@ class OrdersController {
         customerState,
         customerPhone,
         withGST,
+        createdAt,
         gstRate,
         amountPaid,
         consignee: selectedConsignee,
         oldPendingAdjusted,
         carryForward,
         firm,
-        discountPercent,   // ✅ new
-        discountAmount: discountAmtFromFrontend, // ✅ new
+        discountPercent,
+        discountAmount: discountAmtFromFrontend,
       } = req.body;
-  
+
       let totalAmount = req.body.totalAmount || 0;
       const formattedItems = [];
-  
+
       for (const item of items) {
         const product = await Product.findById(item.productId);
-  
+
         if (!product) {
           return res.status(404).json({
             message: `❌ Product not found in inventory!`,
           });
         }
-  
+
         if (product.stock < item.quantity) {
           return res.status(400).json({
             message: `❌ Not enough stock for '${product.productName}', available: ${product.stock}`,
           });
         }
-  
+
         const itemTotal = product.price * item.quantity;
         if (!req.body.totalAmount) {
           totalAmount += itemTotal;
         }
-  
+
         formattedItems.push({
           name: product.productName,
           price: product.price,
@@ -57,12 +60,13 @@ class OrdersController {
           totalPrice: itemTotal,
           hsn: item.hsn || "",
           _id: product._id,
+          discount: item.discount || 0,
         });
-  
+
         product.stock -= item.quantity;
         await product.save();
       }
-  
+
       // ✅ Apply discount BEFORE GST
       let discountAmount = 0;
       if (discountPercent && discountPercent > 0) {
@@ -72,43 +76,17 @@ class OrdersController {
         discountAmount = discountAmtFromFrontend;
         totalAmount -= discountAmount;
       }
-  
+
       // ✅ Apply GST after discount
       let totalAmountWithGST = totalAmount;
       if (withGST && gstRate) {
         totalAmountWithGST += (totalAmount * gstRate) / 100;
       }
-  
-      // ✅ Firm-wise invoice number logic
-      const prefix = firm === "shreesai" ? "SSS" : "DJT";
-  
-      const latestOrder = await OrdersModel
-        .find({ invoiceNumber: { $regex: `^${prefix}/` }, firm })
-        .sort({ createdAt: -1 })
-        .limit(1);
-  
-      let nextNumber = 1;
-      if (latestOrder.length > 0 && latestOrder[0].invoiceNumber) {
-        const parts = latestOrder[0].invoiceNumber.split("/");
-        if (parts.length === 2 && !isNaN(parseInt(parts[1]))) {
-          nextNumber = parseInt(parts[1]) + 1;
-        }
-      }
-  
-      let invoiceNumber;
-      let exists = true;
-  
-      while (exists) {
-        invoiceNumber = `${prefix}/${String(nextNumber).padStart(4, "0")}`;
-        const check = await OrdersModel.findOne({ invoiceNumber, firm });
-        if (!check) {
-          exists = false;
-        } else {
-          nextNumber++;
-        }
-      }
-  
-      // ✅ Save to database
+
+      // ✅ Generate invoice number from atomic counter
+      const invoiceNumber = await getNextInvoiceNumber(firm);
+
+      // ✅ Save Order to Database
       const newOrder = await OrderService.createOrder(req?.user, {
         user,
         consumer,
@@ -128,15 +106,17 @@ class OrdersController {
         oldPendingAdjusted,
         amountPaid,
         carryForward,
+        createdAt,
         invoiceNumber,
         firm,
       });
-  
+
       return res
         .status(httpStatus.CREATED)
         .json({ success: true, order: newOrder });
-  
+
     } catch (error) {
+      console.error("❌ Error in createOrder:", error);
       return res
         .status(httpStatus.INTERNAL_SERVER_ERROR)
         .json({ message: "❌ Failed to create order" });
