@@ -57,7 +57,7 @@ const Schema = new mongoose.Schema({
       
     firm: {
         type: String,
-        enum: ["devjyoti", "shreesai"],
+        enum: ["devjyoti", "himanshi"],
         default: "devjyoti"
       },
 

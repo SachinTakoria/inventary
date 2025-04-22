@@ -13,4 +13,12 @@ router.get("/", InvoiceController.getInvoices);
 // ✅ NEW: Get invoice by ID
 // router.get("/get/:id", InvoiceController.getInvoiceById);
 
+// 📁 routes/invoice.routes.js
+// router.get("/public-download/:invoiceNumber", InvoiceController.downloadInvoicePDF);
+
+
+router.get('/download/:invoiceNumber', InvoiceController.downloadInvoicePDF);
+
+
+
 module.exports = router;

@@ -17,11 +17,15 @@
     "dotenv": "^16.4.7",
     "express": "^4.19.2",
     "express-validator": "^7.0.1",
+    "fs-extra": "^11.3.0",
     "http-status": "^1.7.4",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.3.3",
     "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "path": "^0.12.7",
+    "pdfkit": "^0.17.0",
+    "puppeteer": "^24.7.0"
   },
   "devDependencies": {
     "@types/multer": "^1.4.12"

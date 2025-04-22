@@ -4,6 +4,9 @@ const OrderService = require("../services/Orders.service");
 const Product = require("../models/Product");
 const { UserModel, OrdersModel } = require("../models");
 const getNextInvoiceNumber = require("../utils/getNextInvoiceNumber");
+const generateInvoicePDF = require("../utils/generateInvoicePDF");
+
+
 
 
 class OrdersController {
@@ -65,6 +68,14 @@ class OrdersController {
 
         product.stock -= item.quantity;
         await product.save();
+
+        try {
+          await generateInvoicePDF(order);
+          console.log("✅ PDF generated for invoice:", order.invoiceNumber);
+        } catch (err) {
+          console.error("❌ Failed to generate PDF:", err.message);
+        }
+        
       }
 
       // ✅ Apply discount BEFORE GST

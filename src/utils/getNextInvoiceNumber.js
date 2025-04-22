@@ -1,7 +1,7 @@
 const InvoiceCounter = require("../models/InvoiceCounter.model");
 
 const getNextInvoiceNumber = async (firm) => {
-  const prefix = firm === "shreesai" ? "SSS" : "DJT";
+  const prefix = firm === "himanshi" ? "HT" : "DJT";
 
   const counter = await InvoiceCounter.findOneAndUpdate(
     { firm },

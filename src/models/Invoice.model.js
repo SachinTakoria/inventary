@@ -32,6 +32,10 @@ const invoiceSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    pdfUrl: {
+      type: String,
+    },
+    
     gstRate: Number,
     customerPhone: String,
     customerName: String,
