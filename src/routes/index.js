@@ -32,6 +32,9 @@ const routes = [
     {
         path: '/purchases', // ✅ NEW: Purchase Tracking API
         route: require("./Purchase.route")
+    },{
+        path: '/purchase-invoice', // ✅ NEW: Purchase Invoice API
+        route: require("./purchaseInvoice.route")
     }
 ];
 
