@@ -10,7 +10,7 @@ const generateInvoicePDF = require("../utils/generateInvoicePDF");
 
 
 class OrdersController {
- static createOrder = CatchAsync(async (req, res) => {
+  static createOrder = CatchAsync(async (req, res) => {
     try {
       const {
         user,
@@ -32,30 +32,30 @@ class OrdersController {
         discountPercent,
         discountAmount: discountAmtFromFrontend,
       } = req.body;
-
+  
       let totalAmount = req.body.totalAmount || 0;
       const formattedItems = [];
-
+  
       for (const item of items) {
         const product = await Product.findById(item.productId);
-
+  
         if (!product) {
           return res.status(404).json({
             message: `❌ Product not found in inventory!`,
           });
         }
-
+  
         if (product.stock < item.quantity) {
           return res.status(400).json({
             message: `❌ Not enough stock for '${product.productName}', available: ${product.stock}`,
           });
         }
-
+  
         const itemTotal = product.price * item.quantity;
         if (!req.body.totalAmount) {
           totalAmount += itemTotal;
         }
-
+  
         formattedItems.push({
           name: product.productName,
           price: product.price,
@@ -65,19 +65,11 @@ class OrdersController {
           _id: product._id,
           discount: item.discount || 0,
         });
-
+  
         product.stock -= item.quantity;
         await product.save();
-
-        try {
-          await generateInvoicePDF(order);
-          console.log("✅ PDF generated for invoice:", order.invoiceNumber);
-        } catch (err) {
-          console.error("❌ Failed to generate PDF:", err.message);
-        }
-        
       }
-
+  
       // ✅ Apply discount BEFORE GST
       let discountAmount = 0;
       if (discountPercent && discountPercent > 0) {
@@ -87,16 +79,16 @@ class OrdersController {
         discountAmount = discountAmtFromFrontend;
         totalAmount -= discountAmount;
       }
-
+  
       // ✅ Apply GST after discount
       let totalAmountWithGST = totalAmount;
       if (withGST && gstRate) {
         totalAmountWithGST += (totalAmount * gstRate) / 100;
       }
-
+  
       // ✅ Generate invoice number from atomic counter
       const invoiceNumber = await getNextInvoiceNumber(firm);
-
+  
       // ✅ Save Order to Database
       const newOrder = await OrderService.createOrder(req?.user, {
         user,
@@ -121,11 +113,19 @@ class OrdersController {
         invoiceNumber,
         firm,
       });
-
+  
+      // ✅ Now after saving the order, generate the Invoice PDF
+      try {
+        await generateInvoicePDF(newOrder.invoiceNumber);
+        console.log("✅ PDF generated for invoice:", newOrder.invoiceNumber);
+      } catch (err) {
+        console.error("❌ Failed to generate PDF:", err.message);
+      }
+  
       return res
         .status(httpStatus.CREATED)
         .json({ success: true, order: newOrder });
-
+  
     } catch (error) {
       console.error("❌ Error in createOrder:", error);
       return res
@@ -133,6 +133,7 @@ class OrdersController {
         .json({ message: "❌ Failed to create order" });
     }
   });
+  
   
 
   static getAllorders = CatchAsync(async (req, res) => {
