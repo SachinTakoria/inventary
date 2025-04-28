@@ -152,8 +152,7 @@ class OrderService {
   // ✅ Get all orders for stats (today, yesterday sales)
   static async getAllOrdersForStats() {
     try {
-      // No filtering, get all orders with totalAmount & createdAt
-      return await OrdersModel.find({}, "totalAmount createdAt");
+      return await OrdersModel.find({}, "totalAmount totalAmountWithGST withGST createdAt");
     } catch (error) {
       throw new ApiError(
         httpStatus.INTERNAL_SERVER_ERROR,
@@ -161,6 +160,7 @@ class OrderService {
       );
     }
   }
+  
 
   static async getOrdersByPhone(phone) {
     return await OrdersModel.find({ customerPhone: phone }).sort({

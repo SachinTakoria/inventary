@@ -51,7 +51,7 @@ const ConsigneeController = {
     try {
       const { id } = req.params;
   
-      // console.log("🗑️ Deleting consignee ID:", id);
+      
   
       // Check valid ObjectId
       if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -75,7 +75,7 @@ const ConsigneeController = {
         message: "✅ Consignee deleted",
       });
     } catch (error) {
-      // console.error("❌ Delete Error:", error);
+     
       return res.status(500).json({
         success: false,
         message: "❌ Failed to delete consignee",
@@ -89,8 +89,7 @@ updateConsignee: async (req, res) => {
   try {
     const { id } = req.params;
 
-    // console.log("🛠️ Consignee ID to update:", id);
-    // console.log("🧪 Body:", req.body);
+ 
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -101,21 +100,21 @@ updateConsignee: async (req, res) => {
 
     const consignee = await Consignee.findById(id);
     if (!consignee) {
-      // console.log("❌ Not found in DB");
+     
       return res.status(404).json({
         success: false,
         message: "❌ Consignee not found",
       });
     }
 
-    // console.log("✅ Consignee found, updating...");
+    
 
     Object.assign(consignee, req.body);
 
     try {
       await consignee.save();
     } catch (saveErr) {
-      // console.log("❌ Save Error:", saveErr);
+    
       return res.status(500).json({
         success: false,
         message: "❌ Failed to save consignee",
@@ -127,7 +126,7 @@ updateConsignee: async (req, res) => {
       consignee,
     });
   } catch (error) {
-    // console.log("❌ Update Error:", error);
+   
     return res.status(500).json({
       success: false,
       message: "❌ Failed to update consignee",

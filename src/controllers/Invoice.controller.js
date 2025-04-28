@@ -18,7 +18,7 @@ const InvoiceController = {
         savedInvoice.pdfUrl = pdfUrl;
         await savedInvoice.save();
       } catch (pdfError) {
-        console.error("❌ PDF generation failed:", pdfError.message);
+       
       }
   
       res.status(httpStatus.CREATED).json({
@@ -26,7 +26,7 @@ const InvoiceController = {
         invoice: savedInvoice,
       });
     } catch (error) {
-      console.error("❌ Error in createInvoice:", error);
+     
       res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: "Failed to create invoice",
@@ -44,7 +44,7 @@ const InvoiceController = {
         invoices,
       });
     } catch (error) {
-      console.error("❌ Error in getInvoices:", error);
+    
       res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: "Failed to fetch invoices",

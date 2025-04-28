@@ -32,7 +32,7 @@ const createInvoice = async (req, res) => {
 
       await product.save();
 
-      console.log(`✅ Updated Stock for ${product.productName}: ${product.stock}`);
+     
 
       // Total amount add karo invoice ke liye
       totalAmount += Number(item.price) * purchaseQuantity;
@@ -54,7 +54,7 @@ const createInvoice = async (req, res) => {
     res.status(201).json({ message: "Invoice created successfully", invoice: newInvoice });
 
   } catch (error) {
-    console.error("Error creating invoice:", error);
+  
     res.status(500).json({ message: "Server error while creating invoice" });
   }
 };

@@ -117,9 +117,9 @@ class OrdersController {
       // ✅ Now after saving the order, generate the Invoice PDF
       try {
         await generateInvoicePDF(newOrder.invoiceNumber);
-        console.log("✅ PDF generated for invoice:", newOrder.invoiceNumber);
+      
       } catch (err) {
-        console.error("❌ Failed to generate PDF:", err.message);
+      
       }
   
       return res
@@ -127,7 +127,7 @@ class OrdersController {
         .json({ success: true, order: newOrder });
   
     } catch (error) {
-      console.error("❌ Error in createOrder:", error);
+     
       return res
         .status(httpStatus.INTERNAL_SERVER_ERROR)
         .json({ message: "❌ Failed to create order" });
@@ -187,42 +187,56 @@ class OrdersController {
     try {
       const startOfToday = new Date();
       startOfToday.setHours(0, 0, 0, 0);
-
+  
       const startOfYesterday = new Date(startOfToday);
       startOfYesterday.setDate(startOfToday.getDate() - 1);
-
+  
       const endOfYesterday = new Date(startOfToday);
-
+  
       const orders = await OrderService.getAllOrdersForStats();
-
+  
       let todaySale = 0;
       let yesterdaySale = 0;
-
+      let todayBills = 0;
+  
       orders.forEach((order) => {
         const orderDate = new Date(order.createdAt);
+  
+        // ✅ Safe amount calculation
+        let amount = 0;
+        if (order.withGST) {
+          amount = order.totalAmountWithGST ? order.totalAmountWithGST : order.totalAmount;
+        } else {
+          amount = order.totalAmount;
+        }
+  
+        // ✅ Add sale amount and bill count
         if (orderDate >= startOfToday) {
-          todaySale += order.totalAmount;
-        } else if (
-          orderDate >= startOfYesterday &&
-          orderDate < endOfYesterday
-        ) {
-          yesterdaySale += order.totalAmount;
+          todaySale += amount;
+          todayBills += 1;
+        } else if (orderDate >= startOfYesterday && orderDate < endOfYesterday) {
+          yesterdaySale += amount;
         }
       });
-
+  
       const totalUsers = await UserModel.countDocuments();
       const totalOrders = await OrdersModel.countDocuments();
-
+  
       res.status(200).json({
-        todaySale,
-        yesterdaySale,
+        todaySale: parseFloat(todaySale.toFixed(2)),         // ✅ 2 decimal ka format
+        yesterdaySale: parseFloat(yesterdaySale.toFixed(2)), // ✅ 2 decimal ka format
+        todayBills,
         totalUsers,
         totalOrders,
       });
     } catch (err) {
+    
       res.status(500).json({ message: "Failed to get sales stats" });
     }
   });
+  
+  
+  
 
   static getInvoiceById = CatchAsync(async (req, res) => {
     const order = await OrdersModel.findById(req.params.id);
