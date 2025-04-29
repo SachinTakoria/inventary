@@ -12,10 +12,11 @@ const purchaseInvoiceSchema = new mongoose.Schema({
   invoiceNumber: { type: String, required: true },
   date: { type: Date, required: true },
   gstType: { type: String, enum: ["with", "without"], default: "without" },
-gstRate: { type: Number, default: 0 },
-
+  gstRate: { type: Number, default: 0 },
+  withGST: { type: Boolean, default: false },  
   items: [purchaseItemSchema], // multiple products in one invoice
   totalAmount: { type: Number, default: 0 }, // sum of all item amounts
+  totalAmountWithGST: { type: Number, default: 0 }, 
 }, { timestamps: true });
 
 module.exports = mongoose.model("PurchaseInvoice", purchaseInvoiceSchema);

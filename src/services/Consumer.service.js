@@ -174,7 +174,7 @@ class ConsumerService{
                  
        ;
          const arr =await  orders.map((cur)=>{
-    // console.log();
+    
     return [...cur.items.map((c)=>c.price)]
   })
 
