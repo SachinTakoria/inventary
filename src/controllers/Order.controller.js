@@ -248,34 +248,39 @@ class OrdersController {
 
   static getSaleSummaryByDate = CatchAsync(async (req, res) => {
     const { date } = req.query;
-
+  
     if (!date) {
       return res.status(400).json({ message: "Date is required" });
     }
-
-    const selectedDate = new Date(date);
-    selectedDate.setHours(0, 0, 0, 0);
-
-    const nextDay = new Date(selectedDate);
-    nextDay.setDate(selectedDate.getDate() + 1);
-
+  
+    const selectedDate = new Date(date + "T00:00:00.000+05:30");
+    const nextDay = new Date(date + "T00:00:00.000+05:30");
+    nextDay.setDate(nextDay.getDate() + 1);
+  
     const orders = await OrdersModel.find({
       createdAt: {
         $gte: selectedDate,
         $lt: nextDay,
       },
     });
-
+  
     let totalSale = 0;
     orders.forEach((order) => {
-      totalSale += order.totalAmount;
+      let amount = 0;
+      if (order.withGST) {
+        amount = order.totalAmountWithGST || order.totalAmount;
+      } else {
+        amount = order.totalAmount;
+      }
+      totalSale += amount;
     });
-
+  
     res.status(200).json({
       date: date,
-      totalSale,
+      totalSale: parseFloat(totalSale.toFixed(2)),
     });
   });
+  
 
   static getOrdersByCustomerPhone = CatchAsync(async (req, res) => {
     const { phone } = req.query;
