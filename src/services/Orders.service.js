@@ -25,6 +25,7 @@ class OrderService {
         firm,
         discountPercent = 0,         // ✅ new
         discountAmount = 0,          // ✅ new
+        totalQuantity = 0            // ✅ new added
       } = body;
   
       // ✅ Subtotal calculation
@@ -33,7 +34,6 @@ class OrderService {
         const discountedPrice = item.price - (item.price * discount) / 100;
         return sum + discountedPrice * item.quantity;
       }, 0);
-      
   
       // ✅ Apply discount (if any)
       if (discountPercent > 0) {
@@ -73,6 +73,7 @@ class OrderService {
         oldPendingAdjusted,
         carryForward,
         createdAt,
+        totalQuantity, // ✅ ADDED FOR DATABASE SAVE
       });
   
       return newOrder;
@@ -80,6 +81,7 @@ class OrderService {
       throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
     }
   }
+  
   
 
   // ✅ Get All Orders

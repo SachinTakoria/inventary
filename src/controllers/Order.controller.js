@@ -36,6 +36,9 @@ class OrdersController {
       let totalAmount = req.body.totalAmount || 0;
       const formattedItems = [];
   
+      // ✅ Step 1: Calculate total quantity
+      const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
+  
       for (const item of items) {
         const product = await Product.findById(item.productId);
   
@@ -112,27 +115,25 @@ class OrdersController {
         createdAt,
         invoiceNumber,
         firm,
+        totalQuantity, // ✅ ADD THIS LINE TO SAVE IN DB
       });
   
-      // ✅ Now after saving the order, generate the Invoice PDF
+      // ✅ Generate PDF after saving
       try {
         await generateInvoicePDF(newOrder.invoiceNumber);
-      
-      } catch (err) {
-      
-      }
+      } catch (err) {}
   
       return res
         .status(httpStatus.CREATED)
         .json({ success: true, order: newOrder });
   
     } catch (error) {
-     
       return res
         .status(httpStatus.INTERNAL_SERVER_ERROR)
         .json({ message: "❌ Failed to create order" });
     }
   });
+  
   
   
 

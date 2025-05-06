@@ -74,6 +74,11 @@ const Schema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    totalQuantity: {
+        type: Number,
+        default: 0,
+      },
+      
 
     isActive: {
         type: Boolean,
